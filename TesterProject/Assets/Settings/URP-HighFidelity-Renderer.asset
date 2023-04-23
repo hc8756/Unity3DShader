@@ -1,19 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-3438844211265352095
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6c845eaad8e795478cbc6b067fd8402, type: 3}
-  m_Name: SobelFeature
-  m_EditorClassIdentifier: 
-  m_Active: 1
-  sobelMat: {fileID: 2100000, guid: 0c8255d929db8e242ac4a76ff323bc1d, type: 2}
 --- !u!114 &-1878332245247344467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54,8 +40,8 @@ MonoBehaviour:
       type: 3}
   m_RendererFeatures:
   - {fileID: -1878332245247344467}
-  - {fileID: -3438844211265352095}
-  m_RendererFeatureMap: adc0de57c6d2eee561ce9edd68c546d0
+  - {fileID: 2138188053213085031}
+  m_RendererFeatureMap: adc0de57c6d2eee567fdbfaeb45eac1d
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -95,6 +81,20 @@ MonoBehaviour:
   m_ClusteredRendering: 0
   m_TileSize: 32
   m_IntermediateTextureMode: 1
+--- !u!114 &2138188053213085031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6c845eaad8e795478cbc6b067fd8402, type: 3}
+  m_Name: AnaglyphFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  anaglyphMat: {fileID: 2100000, guid: 0c8255d929db8e242ac4a76ff323bc1d, type: 2}
 --- !u!114 &6961801012831306478
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -108,4 +108,4 @@ MonoBehaviour:
   m_Name: SobelFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  sobelMat: {fileID: 0}
+  anaglyphMat: {fileID: 0}

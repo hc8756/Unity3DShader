@@ -1,9 +1,8 @@
-Shader "Unlit/MyToonShader"
+Shader "Unlit/BasicShader"
 {
 	Properties{
 		_MyDiffuseTexture("Diffuse Texture", 2D) = "grey" {}
 		_MyNormalMap("Normal Map", 2D) = "bump" {}
-		_MyRampTexture("Color Ramp", 2D) = "white" {}
 	}
 
 	SubShader{
@@ -21,7 +20,6 @@ Shader "Unlit/MyToonShader"
 			CBUFFER_START(UnityPerMaterial)
 				texture2D _MyDiffuseTexture;
 				texture2D _MyNormalMap;
-				texture2D _MyRampTexture;
 				SamplerState my_linear_clamp_sampler; //name determines sampler state settings
 			CBUFFER_END
 
@@ -77,8 +75,6 @@ Shader "Unlit/MyToonShader"
 				//Diffuse term 
 				float diffuseAtten = saturate(dot(input.normalWS, lightDir));
 				float3 diffuseTerm = diffuseAtten * lightCol;
-				float2 rampUV = float2(diffuseAtten, 0);
-				float rampMult = _MyRampTexture.Sample(my_linear_clamp_sampler, rampUV).r;//don't use input.uv, use attenuation value for u, v doesn't matter
 
 				//Ambient term
 				float3 ambientTerm = float3(0.4f, 0.6f, 0.75f);// sky blue color
@@ -87,7 +83,7 @@ Shader "Unlit/MyToonShader"
 				diffuseTerm *= (shadowTerm / 5);
 
 				float3 totalColor;
-				totalColor = rampMult * diffuseColor * (ambientTerm + diffuseTerm);
+				totalColor = diffuseColor * (ambientTerm + diffuseTerm);
 				return  float4(totalColor, 1);
 
 
