@@ -1,8 +1,7 @@
 Shader "Unlit/BasicShader"
 {
 	Properties{
-		_MyDiffuseTexture("Diffuse Texture", 2D) = "grey" {}
-		_MyNormalMap("Normal Map", 2D) = "bump" {}
+		_MyColor("Material Color", Color) = (.5, .5, .5, 1)
 	}
 
 	SubShader{
@@ -18,8 +17,7 @@ Shader "Unlit/BasicShader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 			CBUFFER_START(UnityPerMaterial)
-				texture2D _MyDiffuseTexture;
-				texture2D _MyNormalMap;
+				float4 _MyColor;
 				SamplerState my_linear_clamp_sampler; //name determines sampler state settings
 			CBUFFER_END
 
@@ -54,18 +52,8 @@ Shader "Unlit/BasicShader"
 
 			float4 Fragment(VertexOutput input) : SV_TARGET{
 
-				//Extract information from diffuse map
-				float3 diffuseColor = _MyDiffuseTexture.Sample(my_linear_clamp_sampler, input.uv).rgb;
-
-				//Extract information from normal map
-				float3 unpackedNormal = _MyNormalMap.Sample(my_linear_clamp_sampler, input.uv).rgb * 2 - 1;
-
-				float3 N = normalize(input.normalWS);
-				float3 B = normalize(input.bitangentWS);
-				float3 T = normalize(input.tangentWS);
-				float3x3 TBN = float3x3(T, B, N);
-
-				input.normalWS = mul(unpackedNormal, TBN);
+				//Use color selected by user
+				float3 diffuseColor = _MyColor;
 
 				//Get light information
 				Light light = GetMainLight();
@@ -153,35 +141,35 @@ Shader "Unlit/BasicShader"
 			#include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
 			ENDHLSL
 		}
-					Pass
-				{
-					Name "DepthOnly"
-					Tags{"LightMode" = "DepthOnly"}
+		Pass
+		{
+			Name "DepthOnly"
+			Tags{"LightMode" = "DepthOnly"}
 
-					ZWrite On
-					ColorMask 0
-					Cull[_Cull]
+			ZWrite On
+			ColorMask 0
+			Cull[_Cull]
 
-					HLSLPROGRAM
-					#pragma only_renderers gles gles3 glcore d3d11
-					#pragma target 2.0
+			HLSLPROGRAM
+			#pragma only_renderers gles gles3 glcore d3d11
+			#pragma target 2.0
 
-					//--------------------------------------
-					// GPU Instancing
-					#pragma multi_compile_instancing
+			//--------------------------------------
+			// GPU Instancing
+			#pragma multi_compile_instancing
 
-					#pragma vertex DepthOnlyVertex
-					#pragma fragment DepthOnlyFragment
+			#pragma vertex DepthOnlyVertex
+			#pragma fragment DepthOnlyFragment
 
-					// -------------------------------------
-					// Material Keywords
-					#pragma shader_feature_local_fragment _ALPHATEST_ON
-					#pragma shader_feature_local_fragment _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+			// -------------------------------------
+			// Material Keywords
+			#pragma shader_feature_local_fragment _ALPHATEST_ON
+			#pragma shader_feature_local_fragment _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
 
-					#include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
-					#include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
-					ENDHLSL
-				}
+			#include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
+			ENDHLSL
+		}
 	}
 	Fallback "Diffuse"
 }
