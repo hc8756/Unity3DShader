@@ -55,7 +55,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: -1878332245247344467}
   - {fileID: -7399460652194611514}
-  m_RendererFeatureMap: adc0de57c6d2eee5c6be75a8bdd54f99
+  - {fileID: 6217578620862961053}
+  m_RendererFeatureMap: adc0de57c6d2eee5c6be75a8bdd54f999d959943d0464956
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -95,3 +96,17 @@ MonoBehaviour:
   m_ClusteredRendering: 0
   m_TileSize: 32
   m_IntermediateTextureMode: 0
+--- !u!114 &6217578620862961053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b11743cb153087044919bf5f6520b684, type: 3}
+  m_Name: MyRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  _renderPassMaterial: {fileID: 2100000, guid: 5491125bb3b3e164fb950d80b2a17c57, type: 2}
