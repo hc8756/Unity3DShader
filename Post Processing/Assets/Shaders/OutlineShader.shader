@@ -2,8 +2,7 @@ Shader "Unlit/OutlineShader"
 {
     Properties
     {
-        _Thickness("Outline Thickness", Float) = 1
-        _Color("Outline Color", Vector) = (0,0,0)
+        _EffectOn("Effect On?", Int) = 1
     }
     SubShader
     {
@@ -16,17 +15,16 @@ Shader "Unlit/OutlineShader"
             #pragma vertex Vertex
             #pragma fragment Fragment
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             
 
             CBUFFER_START(UnityPerMaterial)
-                float _Thickness;
+                int _EffectOn;
                 float3 _Color;
                 texture2D _CameraColorTexture;
                 SamplerState sampler_CameraColorTexture;
                 float4 _CameraColorTexture_TexelSize;
-                //texture2D _CameraDepthTexture;
-                //SamplerState sampler_CameraDepthTexture;
             CBUFFER_END
 
             struct VertexInput {
@@ -39,56 +37,64 @@ Shader "Unlit/OutlineShader"
                 float2 uv				: TEXCOORD;
             };
             
-            float4 Outline_float(float2 UV, float outlineThickness, float3 outlineColor)
+            float4 Outline_float(float2 UV)
             {
-                
-                float sobelMatrixX[9] = {
-                    -1, 0, 1,
-                    -2, 0, 2,
-                    -1, 0, 1
-                };
-
-                float sobelMatrixY[9] = {
-                    1, 2, 1,
-                    0, 0, 0,
-                    -1, -2, -1
-                };
-
-                float halfScaleFloor = floor(outlineThickness * 0.5);
-                float halfScaleCeil = ceil(outlineThickness * 0.5);
-
                 float2 Texel = (1.0) / float2(_CameraColorTexture_TexelSize.z, _CameraColorTexture_TexelSize.w);
-                float2 uvSamples[9];
-                float depthSamples[9];
-
-                float3 horizTotal = float3(0,0,0);
-                float3 vertTotal = float3(0, 0, 0);
-
-                uvSamples[0] = UV + float2(-Texel.x, -Texel.y) * halfScaleFloor;
-                uvSamples[1] = UV + float2(0, -Texel.y * halfScaleFloor);
-                uvSamples[2] = UV + float2(Texel.x * halfScaleCeil, -Texel.y * halfScaleFloor);
-
-                uvSamples[3] = UV + float2(-Texel.x * halfScaleFloor, 0);
-                uvSamples[4] = UV + float2(0, 0);
-                uvSamples[5] = UV + float2(Texel.x * halfScaleCeil, 0);
-
-                uvSamples[6] = UV + float2(-Texel.x * halfScaleFloor, Texel.y * halfScaleCeil);
-                uvSamples[7] = UV + float2(0, Texel.y * halfScaleCeil);
-                uvSamples[8] = UV + float2(Texel.x, Texel.y) * halfScaleCeil;
-                
-                for (int i = 0; i < 9; i++)
+                float2 offsets[4] =
                 {
-                    depthSamples[i] = Linear01Depth(SampleSceneDepth(uvSamples[i]), _ZBufferParams);
-                    horizTotal += depthSamples[i] * sobelMatrixX[i];
-                    vertTotal += depthSamples[i] * sobelMatrixY[i];
-                }
+                    float2(-Texel.x, 0),
+                    float2(+Texel.x, 0),
+                    float2(0, -Texel.y),
+                    float2(0, +Texel.y),
+                };
 
-                float3 sobel = sqrt(horizTotal * horizTotal + vertTotal * vertTotal);
-                float sobelTotal = saturate(sobel.x + sobel.y + sobel.z);
-                sobelTotal = sobelTotal > 0.01 ? 1 : 0;
-                float3 original = _CameraColorTexture.Sample(sampler_CameraColorTexture, UV).rgb;
-                float3 finalColor = lerp(original, outlineColor, sobelTotal);
-                
+                // COMPARE DEPTHS --------------------------
+
+                // Sample the depths of this pixel and the surrounding pixels
+                float depthHere = Linear01Depth(UV, _ZBufferParams); 
+                float depthLeft = Linear01Depth(UV + offsets[0], _ZBufferParams);
+                float depthRight = Linear01Depth(UV + offsets[1], _ZBufferParams);
+                float depthUp = Linear01Depth(UV + offsets[2], _ZBufferParams);
+                float depthDown = Linear01Depth(UV + offsets[3], _ZBufferParams);
+
+                // Calculate how the depth changes by summing the absolute values of the differences
+                float depthChange =
+                    abs(depthHere - depthLeft) +
+                    abs(depthHere - depthRight) +
+                    abs(depthHere - depthUp) +
+                    abs(depthHere - depthDown);
+
+                float depthTotal = pow(saturate(depthChange), 2);
+
+                // COMPARE NORMALS --------------------------
+
+                // Sample the normals of this pixel and the surrounding pixels
+                float3 normalHere = _CameraNormalsTexture.Sample(sampler_CameraNormalsTexture, UV).rgb;
+                float3 normalLeft = _CameraNormalsTexture.Sample(sampler_CameraNormalsTexture, UV + offsets[0]).rgb;
+                float3 normalRight = _CameraNormalsTexture.Sample(sampler_CameraNormalsTexture, UV + offsets[1]).rgb;
+                float3 normalUp = _CameraNormalsTexture.Sample(sampler_CameraNormalsTexture, UV + offsets[2]).rgb;
+                float3 normalDown = _CameraNormalsTexture.Sample(sampler_CameraNormalsTexture, UV + offsets[3]).rgb;
+
+                // Calculate how the normal changes by summing the absolute values of the differences
+                float3 normalChange =
+                    abs(normalHere - normalLeft) +
+                    abs(normalHere - normalRight) +
+                    abs(normalHere - normalUp) +
+                    abs(normalHere - normalDown);
+
+                // Total the components
+                float normalTotal = pow(saturate(normalChange.x + normalChange.y + normalChange.z), 2);
+
+                // FINAL COLOR VALUE -----------------------------
+
+                // Which result, depth or normal, is more impactful?
+                float outline = max(depthTotal, normalTotal);
+
+                // Sample the color here
+                float3 color = _CameraColorTexture.Sample(sampler_CameraColorTexture, UV).rgb;
+
+                // Interpolate between this color and the outline
+                float3 finalColor = lerp(color, float3(0, 0, 0), outline);
                 return float4(finalColor, 1);
             }
             
@@ -101,9 +107,12 @@ Shader "Unlit/OutlineShader"
             }
 
             float4 Fragment(VertexOutput input) : SV_TARGET{
-                return Outline_float(input.uv,_Thickness,_Color);
-                
-                            
+                if(_EffectOn){
+                    return Outline_float(input.uv);
+                }
+                else{
+                    return _CameraColorTexture.Sample(sampler_CameraColorTexture, input.uv).rgba;
+                }                    
             }
             ENDHLSL
         }

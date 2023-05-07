@@ -3,7 +3,7 @@ Shader "Unlit/AnaglyphShader"
     Properties
     {
         _Offset("Color Offset", Float) = 2
-        _DepthThreshold("Depth Threshold", Float) = 0.001
+        _EffectOn("Effect On?", Int) = 1
     }
     SubShader
     {
@@ -17,11 +17,10 @@ Shader "Unlit/AnaglyphShader"
             #pragma fragment Fragment
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-            
 
             CBUFFER_START(UnityPerMaterial)
                 float _Offset;
-                float _DepthThreshold;
+                int _EffectOn;
                 texture2D _CameraColorTexture;
                 SamplerState sampler_CameraColorTexture;
                 float4 _CameraColorTexture_TexelSize;
@@ -39,20 +38,16 @@ Shader "Unlit/AnaglyphShader"
 
             float4 Anaglyph_color(float2 UV, float colorOffset)
             {
-                float depthSample = Linear01Depth(SampleSceneDepth(UV), _ZBufferParams);
-                if(depthSample<1){colorOffset *= 0.5 + depthSample;}
-                
-                float2 Texel = (1.0) / float2(_CameraColorTexture_TexelSize.z, _CameraColorTexture_TexelSize.w);
-                float2 uvLeft = float2(UV.x - Texel.x * colorOffset, UV.y);
-                float2 uvRight = float2(UV.x + Texel.x * colorOffset, UV.y);
-                float3 addedColorLeft = _CameraColorTexture.Sample(sampler_CameraColorTexture, uvLeft).rgb;
-                float3 addedColorRight = _CameraColorTexture.Sample(sampler_CameraColorTexture, uvRight).rgb;
-                addedColorLeft.g *= 0;
-                addedColorLeft.b *= 0;
-   
-                addedColorRight.r *= 0;
-                float3 result = addedColorLeft + addedColorRight;
-                return float4(result, 1);
+                    float2 Texel = (1.0) / float2(_CameraColorTexture_TexelSize.z, _CameraColorTexture_TexelSize.w);
+                    float2 uvRight = float2(UV.x + Texel.x * colorOffset, UV.y);
+                    float3 addedColorCenter = _CameraColorTexture.Sample(sampler_CameraColorTexture, UV).rgb;
+                    float3 addedColorRight = _CameraColorTexture.Sample(sampler_CameraColorTexture, uvRight).rgb;
+                    addedColorCenter.r *= 0;
+                    addedColorCenter.g /= 2;
+                    addedColorRight.g *= 0;
+                    addedColorRight.b *= 0;
+                    float3 result = addedColorCenter + addedColorRight;
+                    return float4(result, 1);     
             }
             
             VertexOutput Vertex(VertexInput input) {
@@ -64,7 +59,10 @@ Shader "Unlit/AnaglyphShader"
             }
 
             float4 Fragment(VertexOutput input) : SV_TARGET{
-                return Anaglyph_color(input.uv,_Offset);
+                if(_EffectOn){ return Anaglyph_color(input.uv,_Offset); }
+                else{
+                    return _CameraColorTexture.Sample(sampler_CameraColorTexture, input.uv).rgba;
+                }
             }
             ENDHLSL
         }

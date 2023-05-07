@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M_Toon
+  m_Name: M_Outline
   m_Shader: {fileID: 4800000, guid: 42dabdc73e1bc2f4a9d4a6bf1af36ffe, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -88,6 +88,7 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _EffectOn: 1
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
@@ -102,7 +103,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _Surface: 0
-    - _Thickness: 1
+    - _Thickness: 1.32
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:

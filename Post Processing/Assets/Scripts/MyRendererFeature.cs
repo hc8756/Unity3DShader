@@ -5,9 +5,10 @@ public class MyRendererFeature : ScriptableRendererFeature
 {
     private MyRenderPass _renderPass;
     public Material _renderPassMaterial=null;
+    public RenderPassEvent _renderPassEvent = RenderPassEvent.AfterRendering;
     public override void Create()
     {
-        _renderPass = new MyRenderPass(_renderPassMaterial);
+        _renderPass = new MyRenderPass(_renderPassMaterial,_renderPassEvent);
        
     }
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)

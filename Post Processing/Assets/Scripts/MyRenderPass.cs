@@ -10,10 +10,10 @@ public class MyRenderPass : ScriptableRenderPass
     int temporaryRTId = Shader.PropertyToID("_TempRT");
     private Material blitMat = null;
 
-    public MyRenderPass(Material mat)
+    public MyRenderPass(Material mat, RenderPassEvent pe)
     {
         blitMat = mat;
-        renderPassEvent = RenderPassEvent.BeforeRenderingTransparents;
+        renderPassEvent =pe;
     }
     public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
     {
