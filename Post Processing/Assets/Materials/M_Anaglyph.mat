@@ -102,7 +102,7 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _EffectOn: 1
+    - _EffectOn: 0
     - _EnvironmentReflections: 1
     - _FactorDepth: 0
     - _GlossMapScale: 0

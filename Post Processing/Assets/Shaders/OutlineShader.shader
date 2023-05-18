@@ -51,11 +51,11 @@ Shader "Unlit/OutlineShader"
                 // COMPARE DEPTHS --------------------------
 
                 // Sample the depths of this pixel and the surrounding pixels
-                float depthHere = Linear01Depth(UV, _ZBufferParams); 
-                float depthLeft = Linear01Depth(UV + offsets[0], _ZBufferParams);
-                float depthRight = Linear01Depth(UV + offsets[1], _ZBufferParams);
-                float depthUp = Linear01Depth(UV + offsets[2], _ZBufferParams);
-                float depthDown = Linear01Depth(UV + offsets[3], _ZBufferParams);
+                float depthHere = Linear01Depth(SampleSceneDepth(UV), _ZBufferParams);
+                float depthLeft = Linear01Depth(SampleSceneDepth(UV + offsets[0]), _ZBufferParams);
+                float depthRight = Linear01Depth(SampleSceneDepth(UV + offsets[1]), _ZBufferParams);
+                float depthUp = Linear01Depth(SampleSceneDepth(UV + offsets[2]), _ZBufferParams);
+                float depthDown = Linear01Depth(SampleSceneDepth(UV + offsets[3]), _ZBufferParams);
 
                 // Calculate how the depth changes by summing the absolute values of the differences
                 float depthChange =
